@@ -23,58 +23,35 @@ namespace ONVIF_MediaProfilDashboard
     {
         static void Main()
         {
-            string address = "192.168.0.15:80";
+            string address = "192.168.0.58:80";
             string user = "admin";
             string password = "rlrksurv@!";
+
             string cam_profile = "MediaProfile000";
             string ptz_profile = "000";
 
+            //수정
 
             Console.WriteLine("build end");
                        
             Control c = new Control();
-            int loopstop = 0 ;
+            int loopstop = 1 ;
             c.Initialise(address, user, password);
+            //c.SetToken(cam_profile, ptz_profile);
 
             //c.SetCam(address, user, password, cam_profile, ptz_profile);
-            c.PanLeft();
-            c.Stop();
-
+            float setvelocity = 1f;
             while (true)
             {
-                Console.WriteLine("getprofileend / 1:up ..");
-                int input = Convert.ToInt32(Console.ReadLine());
-                if (loopstop == 1)
+                Console.WriteLine("getprofileend /L,R,U,D,UR,UD q=end..");
+                
+                string input = Console.ReadLine();
+                if (loopstop == 0)
                     break;
-                switch (input)
-                {
-                    case 1:
-                        c.TiltUp();
-                        break;
-                    case 2:
-                        c.TiltDown();
-                        break;
-                    case 3:
-                        {
-                            c.PanLeft();
-                            c.Stop();
-                            break;
-                        }
-                    case 4:
-                        c.PanRight();
-                        break;
-                    defalut:
-                        loopstop = 1;
-                        break;
-                }
-            }
+                c.directionmove(input, setvelocity);
 
-
-           
+            }                            
             
-            
-
-
             //c.ConnectCam();
 
         }

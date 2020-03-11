@@ -12,6 +12,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace ONVIF_MediaProfilDashboard
 {
@@ -41,6 +42,7 @@ namespace ONVIF_MediaProfilDashboard
         Direction direction;
         float panDistance;
         float tiltDistance;
+        
 
         UriBuilder deviceUri;
         MediaProfile[] profiles;
@@ -50,6 +52,12 @@ namespace ONVIF_MediaProfilDashboard
         string cam_ip;
         string cam_id;
         string cam_pw;
+
+        string camProfile;
+        string ptzProfile;
+
+        float mPtzSpeed;
+
 
         public string ErrorMessage { get; private set; }
         public int PanIncrements { get; set; } = 20;
@@ -110,6 +118,13 @@ namespace ONVIF_MediaProfilDashboard
             //changeErrorLogColor(inError);
         }
 
+        public void SetToken(string setcamProfile, string setptzProfile)
+        {
+            camProfile = setcamProfile;
+            ptzProfile = setptzProfile;
+            initialised = true;
+        }
+
         public bool Initialise(string cameraAddress, string userName, string password)
         {
             bool result = false;
@@ -146,7 +161,6 @@ namespace ONVIF_MediaProfilDashboard
                 //profile = mediaClient.GetProfile(profs[0].token);
 
                 //onvif ver 2.0
-
                 profiles = mediaClient.GetProfiles(null, null);
 
 
@@ -199,10 +213,50 @@ namespace ONVIF_MediaProfilDashboard
             return result;
         }
 
+        
+
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             Move();
         }
+
+        public void TiltUp()
+        {
+            if (initialised)
+            {
+                if (relative)
+                {
+                    direction = Direction.Up;
+                    Move();
+                }
+                else
+                {
+                    velocity.PanTilt.x = 0;
+                    velocity.PanTilt.y = options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Max;                    
+                    ptzClient.ContinuousMove(profiles[0].token, velocity, "PT10S");
+                }
+            }
+        }
+
+        public void TiltDown()
+        {
+            if (initialised)
+            {
+                if (relative)
+                {
+                    direction = Direction.Down;
+                    Move();
+                }
+                else
+                {
+                    velocity.PanTilt.x = 0;
+                    velocity.PanTilt.y = options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Min;
+                    velocity.PanTilt.y = -1;
+                    ptzClient.ContinuousMove(profiles[0].token, velocity, "PT10S");
+                }
+            }
+        }
+
 
         public void PanLeft()
         {
@@ -216,6 +270,7 @@ namespace ONVIF_MediaProfilDashboard
                 else
                 {
                     velocity.PanTilt.x = options.Spaces.ContinuousPanTiltVelocitySpace[0].XRange.Min;
+                    //velocity.PanTilt.x = -0.5f;
                     velocity.PanTilt.y = 0;
                     ptzClient.ContinuousMove(profiles[0].token, velocity, "PT10S");
                 }
@@ -235,45 +290,72 @@ namespace ONVIF_MediaProfilDashboard
                 {
                     velocity.PanTilt.x = options.Spaces.ContinuousPanTiltVelocitySpace[0].XRange.Max;
                     velocity.PanTilt.y = 0;
-                    ptzClient.ContinuousMoveAsync(profiles[0].token, velocity, "PT10S");
+                    ptzClient.ContinuousMove(profiles[0].token, velocity, "PT10S");
+
                 }
             }
         }
 
-        public void TiltUp()
+        public void directionmove(string input, float speed)
         {
-            if (initialised)
+            mPtzSpeed = speed;
+            switch(input)
             {
-                if (relative)
-                {
-                    direction = Direction.Up;
-                    Move();
-                }
-                else
-                {
-                    velocity.PanTilt.x = 0;
-                    velocity.PanTilt.y = options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Max;
-                    ptzClient.ContinuousMoveAsync(profiles[0].token, velocity, "PT10S");
-                }
-            }
-        }
+                case "L":
+                    {
+                        //"-1"값 디바이스마다 확인 필요 03.11.yj
+                        velocity.PanTilt.x = mPtzSpeed * -1;
+                        velocity.PanTilt.y = 0;
+                        break;
+                    }
+                case "R":
+                    {
+                        velocity.PanTilt.x = mPtzSpeed * 1;
+                        velocity.PanTilt.y = 0;
+                        break;
+                    }
+                case "U":
+                    {
+                        velocity.PanTilt.x = 0;
+                        velocity.PanTilt.y = mPtzSpeed * 1;
+                        break;
+                    }
+                case "D":
+                    {
+                        velocity.PanTilt.x = 0;
+                        velocity.PanTilt.y = mPtzSpeed * -1;
+                        break;
+                    }
+                case "UL":
+                    {
+                        velocity.PanTilt.x = mPtzSpeed * -1;
+                        velocity.PanTilt.y = mPtzSpeed * 1;
+                        break;
+                    }
+                case "UR":
+                    {
+                        velocity.PanTilt.x = mPtzSpeed * 1;
+                        velocity.PanTilt.y = mPtzSpeed * 1;
+                        break;
+                    }
+                case "DL":
+                    {
+                        velocity.PanTilt.x = mPtzSpeed * -1;
+                        velocity.PanTilt.y = mPtzSpeed * -1;
+                        break;
+                    }
+                case "DR":
+                    {
+                        velocity.PanTilt.x = mPtzSpeed * 1;
+                        velocity.PanTilt.y = mPtzSpeed * -1;
+                        break;
+                    }
+                default :
+                    break;
 
-        public void TiltDown()
-        {
-            if (initialised)
-            {
-                if (relative)
-                {
-                    direction = Direction.Down;
-                    Move();
-                }
-                else
-                {
-                    velocity.PanTilt.x = 0;
-                    velocity.PanTilt.y = options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Min;
-                    ptzClient.ContinuousMoveAsync(profiles[0].token, velocity, "PT10S");
-                }
             }
+            ptzClient.ContinuousMove(profiles[0].token, velocity, "PT10S");
+            ptzClient.Stop(profiles[0].token, true, true);
         }
 
         public void Stop()
@@ -328,7 +410,7 @@ namespace ONVIF_MediaProfilDashboard
             }
             if (move)
             {
-                ptzClient.RelativeMove(profiles[0].token, vector, velocity);
+                ptzClient.RelativeMove(ptzProfile, vector, velocity);
             }
             timer.Enabled = true;
         }
