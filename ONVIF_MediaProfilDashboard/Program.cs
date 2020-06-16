@@ -23,9 +23,9 @@ namespace ONVIF_MediaProfilDashboard
     {
         static void Main()
         {
-            string address = "121.166.75.213:80";
+            string address = "192.168.0.139:80";
             string user = "admin";
-            string password = "ktt15880112!";            
+            string password = "admin123";            
 
             
             Console.WriteLine("build end");

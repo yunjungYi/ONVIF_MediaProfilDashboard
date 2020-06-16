@@ -98,22 +98,22 @@ namespace ONVIF_MediaProfilDashboard
                 //  System.Security.Principal.TokenImpersonationLevel.Impersonation;
                 //mediaClient.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
                 //mediaClient.ClientCredentials.HttpDigest.ClientCredential.Password = password;
-                ptzClient = new PTZClient(bind,
-                  new EndpointAddress($"http://{cameraAddress}/onvif/device_service"));
-                ptzClient.ClientCredentials.HttpDigest.AllowedImpersonationLevel =
-                  System.Security.Principal.TokenImpersonationLevel.Impersonation;
-                ptzClient.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
-                ptzClient.ClientCredentials.HttpDigest.ClientCredential.Password = password;
+                //ptzClient = new PTZClient(bind,
+                //  new EndpointAddress($"http://{cameraAddress}/onvif/device_service"));
+                //ptzClient.ClientCredentials.HttpDigest.AllowedImpersonationLevel =
+                //  System.Security.Principal.TokenImpersonationLevel.Impersonation;
+                //ptzClient.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
+                //ptzClient.ClientCredentials.HttpDigest.ClientCredential.Password = password;
 
-                deviceclient = new DeviceClient(bind,
-                  new EndpointAddress($"http://{cameraAddress}/onvif/device_service"));
-                deviceclient.ClientCredentials.HttpDigest.AllowedImpersonationLevel =
-                  System.Security.Principal.TokenImpersonationLevel.Impersonation;
-                deviceclient.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
-                deviceclient.ClientCredentials.HttpDigest.ClientCredential.Password = password;
+               deviceclient = new DeviceClient(bind,
+                 new EndpointAddress($"http://{cameraAddress}/onvif/device_service"));
+               deviceclient.ClientCredentials.HttpDigest.AllowedImpersonationLevel =
+                 System.Security.Principal.TokenImpersonationLevel.Impersonation;
+               deviceclient.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
+               deviceclient.ClientCredentials.HttpDigest.ClientCredential.Password = password;
 
                 mediaClient10 = new MediaClient(bind,
-                  new EndpointAddress($"http://{cameraAddress}/onvif/device_service"));
+                  new EndpointAddress($"http://{cameraAddress}/onvif/media_service"));
                 mediaClient10.ClientCredentials.HttpDigest.AllowedImpersonationLevel =
                   System.Security.Principal.TokenImpersonationLevel.Impersonation;
                 mediaClient10.ClientCredentials.HttpDigest.ClientCredential.UserName = userName;
@@ -128,7 +128,16 @@ namespace ONVIF_MediaProfilDashboard
 
                 profile10 = mediaClient10.GetProfile(profs[0].token);
 
-                
+                ONVIF_MediaProfilDashboard.Media10.StreamSetup streamSetup = new ONVIF_MediaProfilDashboard.Media10.StreamSetup() { };
+
+                streamSetup.Stream = StreamType.RTPUnicast;
+                streamSetup.Transport = new Transport();
+                streamSetup.Transport.Protocol = TransportProtocol.RTSP;
+
+
+
+
+                MediaUri mediaUri = mediaClient10.GetStreamUri(streamSetup, profs[0].token);
 
                 //string string2222 = deviceclient.GetWsdlUrl();
 
